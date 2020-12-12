@@ -60,9 +60,66 @@ func ejecutarComando(commandArray []string) {
 		rep(commandArray)
 	} else if strings.ToLower(data) == "mount" {
 		mount(commandArray)
+	} else if strings.ToLower(data) == "unmount" {
+		unmount(commandArray)
 	} else {
 		fmt.Println("Otro Comando")
 	}
+}
+
+func unmount(command []string) {
+	var commandArray []string
+	var id string = ""
+	for i := 1; i < len(command); i++ {
+		commandArray = strings.Split(command[i], ">")
+		for a := 0; a < len(commandArray); a++ {
+			commandArray[a] = strings.Trim(commandArray[a], "-")
+		}
+		if strings.ToLower(commandArray[0]) == "id" {
+			id = commandArray[1]
+		} else {
+			fmt.Println("Comando inclrrecto")
+		}
+	}
+	fmt.Println(id)
+	var binid [10]byte
+	copy(binid[:], id)
+	found := false
+	for j := 0; j < len(mounts); j++ {
+		if mounts[j].Status != 0 {
+			for k := 0; k < len(mounts[j].Particion); k++ {
+				if mounts[j].Particion[k].Status != 90 {
+					if mounts[j].Particion[k].Id == binid {
+
+						mounts[j].Particion[k].Status = 90
+						found = true
+						quedan := false
+
+						fmt.Println("-- Se Desmonto ")
+
+						for z := 0; z < len(mounts[j].Particion); z++ {
+							if mounts[j].Particion[z].Status != 90 {
+								quedan = true
+								break
+							}
+						}
+						if !quedan {
+
+							mounts[j].Status = 0
+						}
+						break
+					}
+				}
+			}
+		}
+		if found == true {
+			break
+		}
+	}
+	if found == false {
+		fmt.Println("No se encontro ninguna particion con el id: ")
+	}
+
 }
 
 func mkdisk(command []string) {
@@ -580,4 +637,5 @@ func mount(command []string) {
 //rmdisk -path->"/home/mis discos/Disco3.dsk"
 //fdisk -Size->1 -add->5 -path->/home/Disco1.dsk -name->Particion1
 //mount -path->/home/Disco1.dsk -name->Particion1
-//rep -id->vda1 -Path->/home/user/reports/reporte1.jpg -name->mbr
+//rep -id->vda1 -Path->/home/reporte1.jpg -name->mbr
+//unmount -id->vda1
